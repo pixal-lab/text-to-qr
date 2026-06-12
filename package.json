@@ -1,0 +1,16 @@
+{
+  "name": "text-to-qr",
+  "version": "1.0.0",
+  "description": "Text to QR printable PDF generator",
+  "scripts": {
+    "dev": "npx http-server -p 3000"
+  },
+  "keywords": [
+    "qr",
+    "pdf",
+    "text",
+    "generator"
+  ],
+  "author": "",
+  "license": "ISC"
+}

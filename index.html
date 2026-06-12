@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to QR - Generador de QR Imprimibles</title>
+    <meta name="description" content="Transforma listas de textos en códigos QR distribuidos en PDF listos para imprimir y recortar.">
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Iconos SVG integrados para velocidad y diseño responsivo sin dependencias pesadas -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar de Controles -->
+        <aside class="sidebar">
+            <header class="app-header">
+                <div class="logo-area">
+                    <div class="logo-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="10" height="10" x="3" y="3" rx="2"/>
+                            <rect width="6" height="6" x="14" y="3" rx="1"/>
+                            <rect width="6" height="6" x="3" y="14" rx="1"/>
+                            <path d="M14 14h2v2h-2z"/>
+                            <path d="M18 18h2v2h-2z"/>
+                            <path d="M14 18h2v2h-2z"/>
+                            <path d="M18 14h2v2h-2z"/>
+                        </svg>
+                    </div>
+                    <h1>Text<span>to</span>QR</h1>
+                </div>
+                <p class="subtitle">Crea plantillas de códigos QR recortables a partir de una lista de textos.</p>
+            </header>
+
+            <div class="scrollable-config">
+                <!-- SECCIÓN 1: Textos de Entrada -->
+                <section class="config-card">
+                    <div class="card-header">
+                        <span class="step-num">1</span>
+                        <h2>Lista de Textos</h2>
+                    </div>
+                    <div class="card-body">
+                        <label for="texts-input" class="field-label">Ingresa un texto por línea</label>
+                        <textarea id="texts-input" placeholder="Texto de ejemplo 1&#10;Texto de ejemplo 2&#10;Otro texto de ejemplo" rows="6"></textarea>
+                        
+                        <div class="texts-status-bar">
+                            <span id="texts-count" class="badge">0 Textos</span>
+                            <div class="texts-actions">
+                                <button type="button" id="btn-shuffle" class="btn btn-secondary btn-sm" title="Aleatorizar orden de los textos">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 3 21"/><path d="M18 21a3 3 0 0 0-3-3H9a3 3 0 0 0-3 3"/><path d="M21 3 14 10"/><path d="M21 21a3 3 0 0 0-3-3h-1.5"/></svg>
+                                    Mezclar
+                                </button>
+                                <button type="button" id="btn-load-demo" class="btn btn-ghost btn-sm">Demo</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN 2: Ajustes de Página -->
+                <section class="config-card">
+                    <div class="card-header">
+                        <span class="step-num">2</span>
+                        <h2>Ajustes de Página</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="page-format" class="field-label">Tamaño de Hoja</label>
+                            <select id="page-format" class="form-control">
+                                <option value="a4" selected>A4 (210 x 297 mm)</option>
+                                <option value="letter">Carta / Letter (216 x 279 mm)</option>
+                                <option value="legal">Oficio / Legal (216 x 356 mm)</option>
+                                <option value="custom">Tamaño Personalizado</option>
+                            </select>
+                        </div>
+
+                        <!-- Dimensiones personalizadas (ocultas por defecto) -->
+                        <div id="custom-size-fields" class="form-row hidden">
+                            <div class="form-group col">
+                                <label for="page-width" class="field-label">Ancho (mm)</label>
+                                <input type="number" id="page-width" class="form-control" value="200" min="50" max="1000">
+                            </div>
+                            <div class="form-group col">
+                                <label for="page-height" class="field-label">Alto (mm)</label>
+                                <input type="number" id="page-height" class="form-control" value="200" min="50" max="1000">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="page-orientation" class="field-label">Orientación</label>
+                            <div class="segmented-control">
+                                <input type="radio" name="orientation" id="orient-portrait" value="portrait" checked>
+                                <label for="orient-portrait">Vertical</label>
+                                <input type="radio" name="orientation" id="orient-landscape" value="landscape">
+                                <label for="orient-landscape">Horizontal</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="range-header">
+                                <label for="page-margin" class="field-label">Margen de Hoja</label>
+                                <span class="range-value" id="val-page-margin">15 mm</span>
+                            </div>
+                            <input type="range" id="page-margin" min="5" max="50" value="15" step="1">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN 3: Distribución del Grid -->
+                <section class="config-card">
+                    <div class="card-header">
+                        <span class="step-num">3</span>
+                        <h2>Distribución y Grilla</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-row">
+                            <div class="form-group col">
+                                <label for="grid-cols" class="field-label">Columnas</label>
+                                <input type="number" id="grid-cols" class="form-control" value="3" min="1" max="10">
+                            </div>
+                            <div class="form-group col">
+                                <label for="grid-rows" class="field-label">Filas</label>
+                                <input type="number" id="grid-rows" class="form-control" value="4" min="1" max="12">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="range-header">
+                                <label for="qr-size" class="field-label">Tamaño del QR</label>
+                                <span class="range-value" id="val-qr-size">40 mm</span>
+                            </div>
+                            <input type="range" id="qr-size" min="15" max="150" value="40" step="1">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="range-header">
+                                <label for="grid-gap" class="field-label">Separación entre QR</label>
+                                <span class="range-value" id="val-grid-gap">10 mm</span>
+                            </div>
+                            <input type="range" id="grid-gap" min="0" max="40" value="10" step="1">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="range-header">
+                                <label for="card-padding" class="field-label">Margen Interno de Tarjeta</label>
+                                <span class="range-value" id="val-card-padding">4 mm</span>
+                            </div>
+                            <input type="range" id="card-padding" min="0" max="15" value="4" step="1" title="Espacio entre el QR y el borde recortable">
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <input type="checkbox" id="center-grid" checked>
+                            <label for="center-grid">Centrar grilla en la hoja</label>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN 4: Diseño y Etiquetas -->
+                <section class="config-card">
+                    <div class="card-header">
+                        <span class="step-num">4</span>
+                        <h2>Etiquetas y Estilo</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group checkbox-group">
+                            <input type="checkbox" id="show-label" checked>
+                            <label for="show-label">Mostrar etiqueta de texto</label>
+                        </div>
+
+                        <div id="label-settings-group">
+                            <div class="form-group">
+                                <label for="label-pattern" class="field-label">Texto de Etiqueta</label>
+                                <input type="text" id="label-pattern" class="form-control" value="Código #{N}">
+                                <small class="field-help">Usar <code>{N}</code> para el número secuencial.</small>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col">
+                                    <label for="label-position" class="field-label">Posición</label>
+                                    <select id="label-position" class="form-control">
+                                        <option value="bottom" selected>Abajo del QR</option>
+                                        <option value="top">Arriba del QR</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col">
+                                    <div class="range-header">
+                                        <label for="label-font-size" class="field-label">Letra (pt)</label>
+                                        <span class="range-value" id="val-label-font-size">10 pt</span>
+                                    </div>
+                                    <input type="range" id="label-font-size" min="6" max="20" value="10" step="1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <input type="checkbox" id="show-borders" checked>
+                            <label for="show-borders">Mostrar líneas de corte punteadas</label>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col">
+                                <label for="qr-color-dark" class="field-label">Color QR</label>
+                                <div class="color-picker-wrapper">
+                                    <input type="color" id="qr-color-dark" value="#000000">
+                                </div>
+                            </div>
+                            <div class="form-group col">
+                                <label for="qr-color-light" class="field-label">Color Fondo</label>
+                                <div class="color-picker-wrapper">
+                                    <input type="color" id="qr-color-light" value="#ffffff">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN 5: Hoja de Referencia -->
+                <section class="config-card">
+                    <div class="card-header">
+                        <span class="step-num">5</span>
+                        <h2>Hoja de Referencia</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group checkbox-group">
+                            <input type="checkbox" id="include-legend" checked>
+                            <label for="include-legend">Incluir hoja de referencia al final</label>
+                        </div>
+                        <p class="section-help-text">Agrega una hoja al final del PDF con la tabla de correspondencias de cada código y su texto original.</p>
+                    </div>
+                </section>
+            </div>
+        </aside>
+
+        <!-- Área de Vista Previa -->
+        <main class="preview-area">
+            <!-- Barra de Herramientas Superior de la Vista Previa -->
+            <div class="preview-toolbar">
+                <div class="toolbar-info">
+                    <h2>Vista Previa del Documento</h2>
+                    <span id="preview-status" class="status-online">
+                        <span class="status-dot"></span>
+                        Al día
+                    </span>
+                </div>
+                
+                <div class="zoom-controls">
+                    <button id="btn-zoom-out" class="btn btn-icon" title="Alejar">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    </button>
+                    <span id="zoom-factor">50%</span>
+                    <button id="btn-zoom-in" class="btn btn-icon" title="Acercar">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    </button>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="btn-generate-pdf" class="btn btn-primary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Descargar PDF Imprimible
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contenedor con advertencia de desbordamiento de grilla si aplica -->
+            <div id="grid-warning" class="warning-banner hidden">
+                <div class="warning-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <div class="warning-message">
+                    <strong>¡Atención!</strong> La configuración de cuadrícula excede los márgenes de la hoja física. Prueba reduciendo el tamaño del QR, los márgenes o el número de filas/columnas.
+                </div>
+            </div>
+
+            <!-- Workspace de Páginas -->
+            <div class="pages-viewport">
+                <div id="pages-container" class="pages-grid">
+                    <!-- Las páginas virtuales se insertarán dinámicamente aquí -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Cargar librerías de CDN -->
+    <!-- QRCode.js de cdnjs (NPM browser bundle) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.4.4/qrcode.min.js"></script>
+    <!-- jsPDF para exportar a PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Código de la Aplicación -->
+    <script src="app.js"></script>
+</body>
+</html>
